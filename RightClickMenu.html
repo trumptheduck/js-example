@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    <style>
+        #menu {
+            display: none;
+        }
+        .wrapper {
+            position: fixed;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+            flex-direction: row;
+        }
+        .menu {
+            background-color: grey;
+            width: fit-content;
+        }
+        .menu__item {
+            position: relative;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            padding-left: 15px;
+            padding-right: 15px;
+            width: 100px;
+            user-select: none;
+            cursor: pointer;
+        }
+        .menu__item:hover {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <p id="button">MENU</p>
+    <script>
+        class Menu {
+            constructor() {
+                this.isBeingUsed = false;
+                this.mainElem = document.createElement("div");
+                this.mainElem.classList.add("wrapper");
+                this.mainElem.addEventListener("mouseenter",()=>{
+                    this.isBeingUsed = true;
+                })
+                this.mainElem.addEventListener("mouseleave",()=>{
+                    this.isBeingUsed = false;
+                })
+                this.mainElem.style.display = "none";
+                this.options = [
+                    {
+                        name: "Item 1",
+                        callback: ()=>{console.log("Called item 1")}
+                    },
+                    {
+                        name: "Item 2",
+                        children: [
+                            {
+                                name: "Item 1",
+                                callback: ()=>{console.log("Called item 1")}
+                            },
+                        ]
+                    }
+                ]
+                this.mainElem.appendChild(this.generateOptions(this.options));
+                document.body.appendChild(this.mainElem);
+                document.addEventListener("contextmenu",(e)=>{
+                    e.preventDefault();
+                    menu.moveMenuAt(e.clientX, e.clientY);
+                    menu.toggleVisibility(true);
+                })
+                document.addEventListener("mousedown",(e)=>{
+                    if (!menu.isBeingUsed) {
+                        menu.toggleVisibility(false);
+                    }
+                })
+            }
+            //Recursive function
+            generateOptions(options) {
+                var result = document.createElement("div");
+                var menus = [];
+                result.classList.add("menu");
+                options.forEach(option=> {
+                    let elem = document.createElement("div");
+                    elem.classList.add("menu__item")
+                    result.appendChild(elem);
+                    elem.innerText = option.name;
+                    if (option.callback) {
+                        elem.addEventListener("mouseup",()=>{
+                            option.callback();
+                        })
+                    }
+                    if (option.children) {
+                        var childrenOptions = this.generateOptions(option.children);
+                        result.classList.add("menu__item--expanded");
+                        elem.appendChild(childrenOptions);
+                        childrenOptions.style.position = "absolute";
+                        childrenOptions.style.left = "130px";
+                        childrenOptions.style.top = "-5px";
+                        childrenOptions.style.display = "none";
+                        elem.addEventListener("mouseenter",()=>{
+                            childrenOptions.style.display = "block";
+                        })
+                        elem.addEventListener("mouseleave",()=>{
+                            childrenOptions.style.display = "none";
+                        })
+                    }
+                })
+                return result;
+            }
+            moveMenuAt(x, y) {
+                this.mainElem.style.top = `${y}px` 
+                this.mainElem.style.left = `${x}px` 
+            }
+            toggleVisibility(isVisible) {
+                if (isVisible) {
+                    this.mainElem.style.display = "block";
+                } else {
+                    this.mainElem.style.display = "none";
+                }
+            }
+        }
+        const menu = new Menu();
+    </script>
+</body>
+</html>
